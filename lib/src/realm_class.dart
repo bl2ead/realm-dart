@@ -80,7 +80,7 @@ export 'realm_object.dart'
     show DynamicRealmObject, RealmEntityMixin, RealmException, RealmObject, RealmObjectChanges, RealmObjectMixin, TypedRealmObject, UserCallbackException;
 
 export 'realm_property.dart';
-export 'results.dart' show RealmResults, RealmResultsChanges;
+export 'results.dart' show RealmResults, RealmResultsChanges, RealmResultsOfObject;
 export 'session.dart' show Session, SessionState, ConnectionState, ProgressDirection, ProgressMode, SyncProgress, ConnectionStateChange;
 export 'subscription.dart' show Subscription, SubscriptionSet, SubscriptionSetState, MutableSubscriptionSet;
 export 'user.dart' show User, UserState, UserIdentity, ApiKeyClient, ApiKey;
