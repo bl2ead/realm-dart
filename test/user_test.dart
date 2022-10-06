@@ -312,6 +312,7 @@ Future<void> main([List<String>? args]) async {
     expect(second.isEnabled, true);
 
     await user.apiKeys.disable(first.id);
+    expect(first.isEnabled, false);
 
     final fetched = await user.apiKeys.fetchAll();
     expect(fetched[0].id, first.id);

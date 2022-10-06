@@ -72,13 +72,9 @@ class RealmResults<T extends Object?> extends collection.IterableBase<T> with Re
   int get length => realmCore.getResultsCount(this);
 
   /// Creates a frozen snapshot of this query.
-  RealmResults<T> freeze() {
-    if (isFrozen) {
-      return this;
-    }
-    final frozenRealm = realm.freeze();
-    return frozenRealm.resolveResults(this);
-  }
+  RealmResults<T> freeze() => isFrozen ? this : resolveIn(realm.freeze());
+
+  RealmResults<T> resolveIn(Realm realm) => realm.resolveResults(this);
 }
 
 // The query operations on results, as well as the ability to subscribe for notifications,

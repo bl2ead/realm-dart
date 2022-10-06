@@ -216,6 +216,8 @@ abstract class TypedRealmObject<T extends RealmObject> implements RealmObject {
   /// Creates a frozen snapshot of this [RealmObject].
   T freeze();
 
+  T? resolveIn(Realm realm);
+
   /// Allows listening for property changes on this Realm object
   ///
   /// Returns a [Stream] of [RealmObjectChanges<T>] that can be listened to.
@@ -268,9 +270,11 @@ mixin RealmObjectMixin<T extends TypedRealmObject<T>> on RealmEntityMixin implem
       return this as T;
     }
 
-    final frozenRealm = realm.freeze();
-    return frozenRealm.resolveObject(this as T)!;
+    return resolveIn(realm.freeze())!;
   }
+
+  @override
+  T? resolveIn(Realm realm) => realm.resolveObject(this as T);
 
   // invocation.memberName in noSuchMethod is a Symbol, which hides its _name field. The idiomatic
   // way to obtain it is via Mirrors, which is not available in Flutter. Symbol.toString returns

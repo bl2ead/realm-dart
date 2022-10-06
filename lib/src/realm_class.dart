@@ -302,6 +302,14 @@ class Realm implements Finalizable {
     return Realm._(config, realmCore.freeze(this));
   }
 
+  Realm thaw() {
+    if (!isFrozen) {
+      return this;
+    }
+
+    return Realm._(config);
+  }
+
   WeakReference<SubscriptionSet>? _subscriptions;
 
   /// The active [SubscriptionSet] for this [Realm]

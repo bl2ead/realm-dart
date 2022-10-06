@@ -49,6 +49,8 @@ abstract class RealmList<T extends Object?> with RealmEntityMixin implements Lis
 
   /// Creates a frozen snapshot of this `RealmList`.
   RealmList<T> freeze();
+
+  RealmList<T>? resolveIn(Realm realm);
 }
 
 class ManagedRealmList<T extends Object?> with RealmEntityMixin, ListMixin<T> implements RealmList<T> {
@@ -158,14 +160,10 @@ class ManagedRealmList<T extends Object?> with RealmEntityMixin, ListMixin<T> im
   bool get isValid => realmCore.listIsValid(this);
 
   @override
-  RealmList<T> freeze() {
-    if (isFrozen) {
-      return this;
-    }
+  RealmList<T> freeze() => isFrozen ? this : resolveIn(realm.freeze())!;
 
-    final frozenRealm = realm.freeze();
-    return frozenRealm.resolveList(this)!;
-  }
+  @override
+  RealmList<T>? resolveIn(Realm realm) => realm.resolveList(this);
 
   @override
   RealmResults<T> get asResults => RealmResultsInternal.createFromList(this, realm, _metadata);
@@ -182,6 +180,9 @@ class UnmanagedRealmList<T extends Object?> extends collection.DelegatingList<T>
 
   @override
   RealmList<T> freeze() => throw RealmStateError("Unmanaged lists can't be frozen");
+
+  @override
+  RealmList<T>? resolveIn(Realm realm) => throw RealmStateError("Unmanaged lists can't be resolved");
 
   @override
   RealmResults<T> get asResults => throw RealmStateError("Unmanaged lists can't be converted to results");
