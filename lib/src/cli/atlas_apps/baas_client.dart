@@ -295,6 +295,50 @@ class BaasClient {
           }''');
     }
 
+    const googleSecret = "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";
+    final dynamic createGoogleSecretResult = await _post('groups/$_groupId/apps/$appId/secrets', '{"name":"googleSecret","value":"$googleSecret"}');
+    String googleClientSecretKeyName = createGoogleSecretResult['name'] as String;
+    await enableProvider(app, 'oauth2-google', config: '''{
+          "clientId": "275150920052-36770md1tuin5hhnl5kiug1vv43gjplp.apps.googleusercontent.com"
+          }''', secretConfig: '''{
+          "clientSecret": "$googleClientSecretKeyName"
+          }''', metadataFelds: '''{
+            "required": true,
+            "name": "name"
+          },
+          {
+            "required": true,
+            "name": "first_name"
+          },
+          {
+            "required": true,
+            "name": "last_name"
+          },
+          {
+            "required": false,
+            "name": "email"
+          },
+          {
+            "required": false,
+            "name": "gender"
+          },
+          {
+            "required": false,
+            "name": "birthday"
+          },
+          {
+            "required": false,
+            "name": "min_age"
+          },
+          {
+            "required": false,
+            "name": "max_age"
+          },
+          {
+            "required": false,
+            "name": "picture"
+          }''');
+
     print('Creating database db_$name$_appSuffix');
 
     await _createMongoDBService(app, '''{
