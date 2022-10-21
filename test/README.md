@@ -208,3 +208,35 @@ https://graph.facebook.com/v14.0/oauth/access_token?grant_type=fb_exchange_token
 4. Go to `"Credentials"` And create new credentials.
 5. Select application type `Web Application`.
 6. Copy generated `"Client ID"` and `"Client secret"` to use them in the tests.
+7. To issue id_token do:
+    - Install: https://cloud.google.com/sdk/docs/install
+    - run the following commands from `gcloud` console:
+    - gcloud auth login
+    - gcloud config set project gggg-366119
+    - gcloud auth print-identity-token dst.stefanova@gmail.com
+8. To issue auth code run this in the brouser
+  "https://accounts.google.com/o/oauth2/v2/auth?
+
+    client_id=XXXXXX.apps.googleusercontent.com
+
+    &response_type=code
+
+    &scope=openid%20email
+
+    &access_type=offline
+
+    &redirect_uri=https://localhost".
+
+    Then login with google email and you will be redirected to "https://localhost/?code=XXXXXXXXXXX" where the auth code is "XXXXXXXXXXX".
+
+9. You can login with google `id_token` using "Custom JWT Authentication" if you use `Credentials.jwt(id_token);` and set the following configurations:
+
+- Verification Method: "Use a JWK URI"
+- JWK URI: "https://www.googleapis.com/oauth2/v3/certs"
+- Metadata Fields: email:name; email:email
+- Audience: "XXXXXXXXXX.apps.googleusercontent.com" (if you don't know the audience for your google app you can get it from "aud" field inside the id_token payload. You can use https://jwt.io to see the payload)
+
+Here is how the configuration in the Atlas app should looks like:
+![image](https://user-images.githubusercontent.com/95419820/197272591-fb0c5388-a357-4a13-b1ab-b6669b2eb472.png)
+
+
