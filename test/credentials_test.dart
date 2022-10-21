@@ -38,6 +38,8 @@ Future<void> main([List<String>? args]) async {
 
     expect(user1, user2);
     expect(user1, isNot(user3));
+    expect(user1.provider, AuthProviderType.anonymous);
+    expect(user3.provider, AuthProviderType.anonymous);
   });
 
   test('Credentials email/password', () {
@@ -449,7 +451,7 @@ Future<void> main([List<String>? args]) async {
   });
 
   ///See test/README.md section 'Manually configure Facebook, Google and Apple authentication providers'"
-  baasTest('Google auth code credentials - login', (configuration) async {
+  baasTest('Google invalid auth code credentials - login fail', (configuration) async {
     final app = App(configuration);
     final authCode = 'some google code';
     final credentials = Credentials.googleAuthCode(authCode);
@@ -465,13 +467,20 @@ Future<void> main([List<String>? args]) async {
     expect(() async => await app.logIn(credentials), throws<RealmException>("error exchanging access code with OAuth2 provider"));
   });
 
-  ///See test/README.md section 'Manually configure Facebook, Google and Apple authentication providers'"
   baasTest('Google Id token credentials - login', (configuration) async {
     final app = App(configuration);
     final tokenId =
-        "ya29.a0Aa4xrXM-y5xB2LceAd1cvyhTkUIi87e3kNixF8WLNeO9Al_kVboXoXsp5TtaL3sV7EEws2SyTGOXZpj6cMsdxt42r05NLj028UUy4Gbxfo6gYd0Z4SbFkRwUm0FmKpC2UIWXdLlpS1bucb3uqpCyPU1cFb7IVcjHSNUDaCgYKATASARESFQEjDvL91hZqBxwKgSi_E-GGgq8ABQ0171";
+        "eyJhbGciOiJSUzI1NiIsImtpZCI6ImVlMWI5Zjg4Y2ZlMzE1MWRkZDI4NGE2MWJmOGNlY2Y2NTliMTMwY2YiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiIzMjU1NTk0MDU1OS5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsImF1ZCI6IjMyNTU1OTQwNTU5LmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwic3ViIjoiMTAzMTYyODk1NDkzNjc5MzkzODMwIiwiZW1haWwiOiJkc3Quc3RlZmFub3ZhQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJhdF9oYXNoIjoiYWNBajJLaG15bjM1Y0hDN0ktMU9uZyIsImlhdCI6MTY2NjM3ODgzMywiZXhwIjoxNjY2MzgyNDMzfQ.bejIZ3lJawD0KRsy0XP8uyAyOCu0F2evh_5PzWi2QlKjNb7AoFJdtPU5SApPr3ouvb8tNyB_vqA5QhusKbWhu5Aspfl_Hv4LUcDnOMyl4q_enfeN4WXh3y67r1vlO5yXpT83QovSPyXqm97gbaOJgp5rX2ZiicCvJyzPRF0RZp7JQSARCPA2AG42EdF8T_TO8tfy4i9ConlhiEbU0NJk-jtTqS-lYeifQA-BCMH-2anMvBKXJmFCUmia_ldRG5lNx4RCVQqUy45y9SrJY8zN43Y8XtU1fKJ7tsTCyhMDjqejs0Qus9xrXkLiADmftQIgS9UcAy23LINt0sJ7u4-oVQ";
+    final credentials = Credentials.jwt(tokenId);
+    final user = await app.logIn(credentials);
+    expect(user.state, UserState.loggedIn);
+    expect(user.provider, AuthProviderType.google);
+  }, skip: "Manual test");
 
-    final credentials = Credentials.googleAuthCode(tokenId);
+  baasTest('Google auth code credentials - login', (configuration) async {
+    final app = App(configuration);
+    final authCode = "4%2F0ARtbsJqGcLot89D7-JUArzEn4sHF53CuzLlbWhpdGuubx10xiq09j9rQpYk_bes2vkNvHA";
+    final credentials = Credentials.googleAuthCode(authCode);
     final user = await app.logIn(credentials);
     expect(user.state, UserState.loggedIn);
     expect(user.provider, AuthProviderType.google);
