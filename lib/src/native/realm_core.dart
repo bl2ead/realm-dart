@@ -533,7 +533,7 @@ class _RealmCore {
     if (error != null) {
       _realmLib.realm_register_user_code_callback_error(error.toPersistentHandle());
     }
-    _realmLib.realm_dart_invoke_navite_with_result(error == null, nativeFunction);
+    _realmLib.realm_dart_invoke_native_with_result(error == null, nativeFunction);
   }
 
   static Future<void> _continueWhenComplete(FutureOr<void> Function() callback, Pointer<Void> nativeFunction) async {
