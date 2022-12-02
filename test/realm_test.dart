@@ -1575,65 +1575,43 @@ Future<void> main([List<String>? args]) async {
 
   test('Realm.onRefresh sync transaction', () async {
     final realm = getRealm(Configuration.local([Person.schema]));
-    var called = false;
     final transaction = realm.beginWrite();
-    realm.refreshAsync().then((_) => called = true);
+    final first = expectLater(realm.refreshAsync(), completes, reason: "beginWrite onRefresh failed");
     realm.add(Person("name"));
     transaction.commit();
+    await first;
 
-    await Future<void>.delayed(Duration(milliseconds: 1));
-    expect(called, true, reason: "beginWrite onRefresh failed");
-
-    called = false;
     realm.write(() {
-      realm.refreshAsync().then((_) => called = true);
+      expectLater(realm.refreshAsync(), completes, reason: "write onRefresh failed");
       realm.add(Person("name"));
     });
-
-    await Future<void>.delayed(Duration(milliseconds: 1));
-    expect(called, true, reason: "write onRefresh failed");
   });
 
   test('Realm.onRefresh async transaction', () async {
     final realm = getRealm(Configuration.local([Person.schema]));
-    bool called = false;
     final transaction = await realm.beginWriteAsync();
-    realm.refreshAsync().then((_) => called = true);
+    expectLater(realm.refreshAsync(), completes);
     realm.add(Person("name"));
     await transaction.commitAsync();
-    expect(called, true);
   });
 
-   test('Realm.onRefresh is called if registered outside a transaction', () async {
+  test('Realm.onRefresh is called if registered outside a transaction', () async {
     final realm = getRealm(Configuration.local([Person.schema]));
-    bool called = false;
 
-    realm.refreshAsync().then((_) => called = true);
-
+    final first = expectLater(realm.refreshAsync(), completes);
     realm.beginWrite().commit();
+    await (first);
 
-    await Future<void>.delayed(Duration(milliseconds: 1));
-
-    expect(called, true);
-
-
-    realm.refreshAsync().then((_) => called = true);
-
+    final second = expectLater(realm.refreshAsync(), completes);
     realm.write(() {});
-
-    await Future<void>.delayed(Duration(milliseconds: 1));
-
-    expect(called, true);
+    await (second);
   });
 
-   test('Realm.onRefresh on frozen realm should be no-op', () async {
+  test('Realm.onRefresh on frozen realm should be no-op', () async {
     var realm = getRealm(Configuration.local([Person.schema]));
-    bool called = false;
     realm = realm.freeze();
 
-    await Future.any([realm.refreshAsync().then((_) => called = true), Future<void>.delayed(Duration(milliseconds: 10))]);
-    
-    expect(called, true);
+    expect(realm.refreshAsync().timeout(const Duration(milliseconds: 10)), completes);
   });
 }
 
