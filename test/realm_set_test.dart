@@ -89,70 +89,86 @@ class _TestRealmSets {
   late Set<DateTime?> nullableDateTimeSet;
   late Set<ObjectId?> nullableObjectIdSet;
   late Set<Uuid?> nullableUuidSet;
+}
 
-  /// When changing update also `supportedTypes`
-  Sets setByType(Type type) {
+extension TestRealmSetsExtension on TestRealmSets {
+  RealmSet<Object?> getSetByType(Type type) {
     switch (type) {
       case bool:
-        return Sets(boolSet as RealmSet<bool>, [true, false]);
+        return boolSet;
       case int:
-        return Sets(intSet as RealmSet<int>, [-1, 0, 1]);
+        return intSet;
       case String:
-        return Sets(stringSet as RealmSet<String>, ['Tesla', 'VW', 'Audi']);
+        return stringSet;
       case double:
-        return Sets(doubleSet as RealmSet<double>, [-1.1, 0.1, 1.1, 2.2, 3.3, 3.14]);
+        return doubleSet;
       case DateTime:
-        return Sets(dateTimeSet as RealmSet<DateTime>, [DateTime(2023).toUtc(), DateTime(1981).toUtc()]);
+        return dateTimeSet;
       case ObjectId:
-        return Sets(objectIdSet as RealmSet<ObjectId>, [ObjectId.fromTimestamp(DateTime(2023).toUtc()), ObjectId.fromTimestamp(DateTime(1981).toUtc())]);
+        return objectIdSet;
       case Uuid:
-        return Sets(uuidSet as RealmSet<Uuid>, [Uuid.fromString("12345678123456781234567812345678"), Uuid.fromString("82345678123456781234567812345678")]);
+        return uuidSet;
       case RealmValue:
-        return Sets(mixedSet as RealmSet<RealmValue>, [RealmValue.nullValue(), RealmValue.bool(true), RealmValue.int(1), RealmValue.string("text")]);
+        return mixedSet;
       case RealmObject:
-        return Sets(objectsSet as RealmSet<Car>, [Car("Tesla"), Car("VW"), Car("Audi")], (realm, value) => realm.find<Car>((value as Car).make));
+        return objectsSet;
       case _NullableBool:
-        return Sets(nullableBoolSet as RealmSet<bool?>, [...setByType(bool).values, null]);
+        return nullableBoolSet;
       case _NullableInt:
-        return Sets(nullableIntSet as RealmSet<int?>, [...setByType(int).values, null]);
+        return nullableIntSet;
       case _NullableString:
-        return Sets(nullableStringSet as RealmSet<String?>, [...setByType(String).values, null]);
+        return nullableStringSet;
       case _NullableDouble:
-        return Sets(nullableDoubleSet as RealmSet<double?>, [...setByType(double).values, null]);
+        return nullableDoubleSet;
       case _NullableDateTime:
-        return Sets(nullableDateTimeSet as RealmSet<DateTime?>, [...setByType(DateTime).values, null]);
+        return nullableDateTimeSet;
       case _NullableObjectId:
-        return Sets(nullableObjectIdSet as RealmSet<ObjectId?>, [...setByType(ObjectId).values, null]);
+        return nullableObjectIdSet;
       case _NullableUuid:
-        return Sets(nullableUuidSet as RealmSet<Uuid?>, [...setByType(Uuid).values, null]);
+        return nullableUuidSet;
       default:
         throw RealmError("Unsupported type $type");
     }
   }
-
-  List<Object?> values(Type type) {
-    return setByType(type).values;
-  }
-
-  List<Object?> getValuesOrManagedValues(Realm realm, Type type) {
-    Sets set = setByType(type);
-    if (set.values.first is! RealmObject) {
-      return set.values;
-    }
-
-    return set.values.map<Object?>((value) {
-      RealmObject? realmValue = set.getRealmObject!(realm, value as RealmObject);
-      return realmValue;
-    }).toList();
-  }
 }
 
-class Sets {
-  final RealmSet<Object?> set;
-  final List<Object?> values;
-  RealmObject? Function(Realm realm, RealmObject value)? getRealmObject = (realm, value) => value;
-
-  Sets(this.set, this.values, [this.getRealmObject]);
+List<Object?> createSampleValues(Type type) {
+  switch (type) {
+    case bool:
+      return [true, false];
+    case int:
+      return [-1, 0, 1];
+    case String:
+      return ['Tesla', 'VW', 'Audi'];
+    case double:
+      return [-1.1, 0.1, 1.1, 2.2, 3.3, 3.14];
+    case DateTime:
+      return [DateTime(2023).toUtc(), DateTime(1981).toUtc()];
+    case ObjectId:
+      return [ObjectId.fromTimestamp(DateTime(2023).toUtc()), ObjectId.fromTimestamp(DateTime(1981).toUtc())];
+    case Uuid:
+      return [Uuid.fromString("12345678123456781234567812345678"), Uuid.fromString("82345678123456781234567812345678")];
+    case RealmValue:
+      return [RealmValue.nullValue(), RealmValue.bool(true), RealmValue.int(1), RealmValue.string("text")];
+    case RealmObject:
+      return [Car("Tesla"), Car("VW"), Car("Audi")];
+    case _NullableBool:
+      return [...createSampleValues(bool), null];
+    case _NullableInt:
+      return [...createSampleValues(int), null];
+    case _NullableString:
+      return [...createSampleValues(String), null];
+    case _NullableDouble:
+      return [...createSampleValues(double), null];
+    case _NullableDateTime:
+      return [...createSampleValues(DateTime), null];
+    case _NullableObjectId:
+      return [...createSampleValues(ObjectId), null];
+    case _NullableUuid:
+      return [...createSampleValues(Uuid), null];
+    default:
+      throw RealmError("Unsupported type $type");
+  }
 }
 
 Future<void> main([List<String>? args]) async {
@@ -161,8 +177,8 @@ Future<void> main([List<String>? args]) async {
   for (var type in supportedTypes) {
     test('RealmSet<$type> unmanged set add', () {
       final testSet = TestRealmSets(1);
-      final set = testSet.setByType(type).set;
-      final values = testSet.values(type);
+      final set = testSet.getSetByType(type);
+      final values = createSampleValues(type);
 
       set.add(values.first);
       expect(set.length, equals(1));
@@ -175,8 +191,8 @@ Future<void> main([List<String>? args]) async {
 
     test('RealmSet<$type> unmanged set remove', () {
       final testSet = TestRealmSets(1);
-      final set = testSet.setByType(type).set;
-      final values = testSet.values(type);
+      final set = testSet.getSetByType(type);
+      final values = createSampleValues(type);
 
       set.add(values.first);
       expect(set.length, equals(1));
@@ -189,8 +205,8 @@ Future<void> main([List<String>? args]) async {
 
     test('RealmSet<$type> unmanged set elementAt', () {
       final testSet = TestRealmSets(1);
-      final set = testSet.setByType(type).set;
-      final values = testSet.values(type);
+      final set = testSet.getSetByType(type);
+      final values = createSampleValues(type);
 
       set.add(values.first);
       expect(set.length, equals(1));
@@ -210,7 +226,7 @@ Future<void> main([List<String>? args]) async {
       expect(realm.find<TestRealmSets>(1), isNotNull);
 
       testSet = realm.find<TestRealmSets>(1)!;
-      var set = testSet.setByType(type).set;
+      var set = testSet.getSetByType(type);
 
       expect(set.length, equals(0));
     });
@@ -220,8 +236,8 @@ Future<void> main([List<String>? args]) async {
       var realm = getRealm(config);
 
       var testSet = TestRealmSets(1);
-      var set = testSet.setByType(type).set;
-      var values = testSet.values(type);
+      var set = testSet.getSetByType(type);
+      var values = createSampleValues(type);
 
       for (var value in values) {
         set.add(value);
@@ -232,9 +248,8 @@ Future<void> main([List<String>? args]) async {
       });
 
       testSet = realm.find<TestRealmSets>(1)!;
-      set = testSet.setByType(type).set;
+      set = testSet.getSetByType(type);
       expect(set.length, equals(values.length));
-      values = testSet.getValuesOrManagedValues(realm, type);
 
       for (var value in values) {
         expect(set.contains(value), true);
@@ -246,14 +261,14 @@ Future<void> main([List<String>? args]) async {
       var realm = getRealm(config);
 
       var testSet = TestRealmSets(1);
-      var set = testSet.setByType(type).set;
-      var values = testSet.values(type);
+      var set = testSet.getSetByType(type);
+      var values = createSampleValues(type);
 
       realm.write(() {
         realm.add(testSet);
       });
 
-      set = testSet.setByType(type).set;
+      set = testSet.getSetByType(type);
 
       expect(set.contains(values.first), false);
 
@@ -262,7 +277,7 @@ Future<void> main([List<String>? args]) async {
       });
 
       testSet = realm.find<TestRealmSets>(1)!;
-      set = testSet.setByType(type).set;
+      set = testSet.getSetByType(type);
       expect(set.contains(values.first), true);
     });
 
@@ -272,17 +287,15 @@ Future<void> main([List<String>? args]) async {
 
       final testSet = TestRealmSets(1);
 
-      var values = testSet.values(type);
+      var values = createSampleValues(type);
 
       realm.write(() {
         realm.add(testSet);
-        var set = testSet.setByType(type).set;
+        var set = testSet.getSetByType(type);
         set.add(values.first);
       });
 
-      var set = testSet.setByType(type).set;
-      // values = testSet.values(type);
-      values = testSet.getValuesOrManagedValues(realm, type);
+      var set = testSet.getSetByType(type);
 
       expect(set.contains(values.first), true);
     });
@@ -297,8 +310,8 @@ Future<void> main([List<String>? args]) async {
         realm.add(testSet);
       });
 
-      var set = testSet.setByType(type).set;
-      var values = testSet.values(type);
+      var set = testSet.getSetByType(type);
+      var values = createSampleValues(type);
 
       realm.write(() {
         set.add(values.first);
@@ -322,8 +335,8 @@ Future<void> main([List<String>? args]) async {
         realm.add(testSet);
       });
 
-      var set = testSet.setByType(type).set;
-      var values = testSet.values(type);
+      var set = testSet.getSetByType(type);
+      var values = createSampleValues(type);
 
       expect(set.length, 0);
 
@@ -347,15 +360,15 @@ Future<void> main([List<String>? args]) async {
       var realm = getRealm(config);
 
       final testSet = TestRealmSets(1);
-      var values = testSet.values(type);
+      var values = createSampleValues(type);
 
       realm.write(() {
         realm.add(testSet);
-        var set = testSet.setByType(type).set;
+        var set = testSet.getSetByType(type);
         set.add(values.first);
       });
 
-      var set = testSet.setByType(type).set;
+      var set = testSet.getSetByType(type);
 
       expect(() => set.elementAt(-1), throws<RealmException>("Index out of range"));
       expect(() => set.elementAt(800), throws<RealmException>());
@@ -371,8 +384,8 @@ Future<void> main([List<String>? args]) async {
         realm.add(testSet);
       });
 
-      var set = testSet.setByType(type).set;
-      var values = testSet.values(type);
+      var set = testSet.getSetByType(type);
+      var values = createSampleValues(type);
 
       expect(set.lookup(values.first), null);
 
@@ -388,15 +401,15 @@ Future<void> main([List<String>? args]) async {
       var realm = getRealm(config);
 
       final testSet = TestRealmSets(1);
-      var set = testSet.setByType(type).set;
-      var values = testSet.values(type);
+      var set = testSet.getSetByType(type);
+      var values = createSampleValues(type);
       set.add(values.first);
 
       realm.write(() {
         realm.add(testSet);
       });
 
-      set = testSet.setByType(type).set;
+      set = testSet.getSetByType(type);
 
       final newSet = set.toSet();
       expect(newSet != set, true);
@@ -410,17 +423,17 @@ Future<void> main([List<String>? args]) async {
       var realm = getRealm(config);
 
       final testSet = TestRealmSets(1);
-      var values = testSet.values(type);
+      var values = createSampleValues(type);
 
       realm.write(() {
         realm.add(testSet);
-        var set = testSet.setByType(type).set;
+        var set = testSet.getSetByType(type);
         for (var value in values) {
           set.add(value);
         }
       });
 
-      var set = testSet.setByType(type).set;
+      var set = testSet.getSetByType(type);
 
       expect(set.length, values.length);
 
@@ -436,8 +449,8 @@ Future<void> main([List<String>? args]) async {
       var realm = getRealm(config);
 
       var testSet = TestRealmSets(1);
-      var set = testSet.setByType(type).set;
-      var values = testSet.values(type);
+      var set = testSet.getSetByType(type);
+      var values = createSampleValues(type);
 
       for (var value in values) {
         set.add(value);
@@ -447,7 +460,7 @@ Future<void> main([List<String>? args]) async {
         realm.add(testSet);
       });
 
-      set = testSet.setByType(type).set;
+      set = testSet.getSetByType(type);
       expect(set.length, equals(values.length));
 
       for (var element in set) {
@@ -462,8 +475,8 @@ Future<void> main([List<String>? args]) async {
       var testSet = TestRealmSets(1);
       realm.write(() => realm.add(testSet));
 
-      var set = testSet.setByType(type).set;
-      var values = testSet.setByType(type).values;
+      var set = testSet.getSetByType(type);
+      var values = createSampleValues(type);
 
       var state = 0;
       final maxSate = 2;
